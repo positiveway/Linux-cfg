@@ -1,0 +1,9 @@
+
+~/.config/gtk-4.0/settings.ini
+
+[Settings]
+gtk-hint-font-metrics=1
+gtk-xft-antialias=1
+gtk-xft-hinting=1
+gtk-xft-hintstyle=hintfull
+gtk-xft-rgba=none
