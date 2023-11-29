@@ -13,7 +13,7 @@ Flatpak="flatpak install -y --noninteractive"
 DocsDir="$HOME/Documents"
 LoginStartupDir="/etc/profile.d"
 
-IsFirstRun=true
+IsFirstRun=false
 
 #Never do full-upgrade, some packages break for example Wine dependencies
 
@@ -127,18 +127,31 @@ sudo chmod +x $ScriptDestPath
 
 #Intel GPU
 $RemoveApt xserver-xorg-video-intel
-#$RemoveFiles /etc/X11/xorg.conf.d/20-intel.conf
+$RemoveFiles /etc/X11/xorg.conf.d/20-intel.conf
 
-echo 'Section "Device"
-  Identifier "Intel Graphics"
-  Driver "modesetting"
-  Option "TearFree" "true"
-EndSection' | sudo tee /etc/X11/xorg.conf.d/20-intel.conf
+# echo 'Section "Device"
+#   Identifier "Intel Graphics"
+#   Driver "modesetting"
+#   Option "TearFree" "true"
+# EndSection' | sudo tee /etc/X11/xorg.conf.d/20-intel.conf
 
 inxi -G
 
 #Fonts
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)"
+
+# Wifi
+# sudo nano /etc/NetworkManager/conf.d/default-wifi-powersave-on.conf
+#
+# By default there is:
+#
+# [connection]
+# wifi.powersave = 3
+#
+# Change the value to 2
+#
+# To take effect, just run:
+# sudo systemctl restart NetworkManager
 
 # QT Themes:
 $InstallApt qt5ct qt5-style-plugins
@@ -276,6 +289,7 @@ sudo update-grub
 
 #show current boot parameters
 cat /proc/cmdline
+cpupower frequency-info
 
 exit
 exit
@@ -392,3 +406,9 @@ $InstallApt linux-xanmod linux-xanmod-edge
 # Since Linux 5.9, it is possible to set the cpufreq.default_governor kernel option.[6] To set the desired scaling parameters at boot, configure the cpupower utility and enable its systemd service. Alternatively, systemd-tmpfiles or udev rules can be used.
 
 # You can also run the cat /proc/cmdline command to check the boot parameters. If you find iommu=on in the output, it confirms that IOMMU is enabled.
+
+# By default, PulseAudio suspends any audio sources that have become idle for too long. When using an external USB microphone, recordings may start with a pop sound. As a workaround, comment out the following line in /etc/pulse/default.pa:
+#
+# load-module module-suspend-on-idle
+#
+# Afterwards, restart PulseAudio with systemctl restart --user pulseaudio
