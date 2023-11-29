@@ -65,7 +65,6 @@ echo "Gnome: $IsGnome"
 echo "KDE: $IsKDE"
 echo "LXQt: $IsLXQt"
 
-
 $AutoRemoveApt
 
 #build
@@ -128,7 +127,13 @@ sudo chmod +x $ScriptDestPath
 
 #Intel GPU
 $RemoveApt xserver-xorg-video-intel
-$RemoveFiles /etc/X11/xorg.conf.d/20-intel.conf
+#$RemoveFiles /etc/X11/xorg.conf.d/20-intel.conf
+
+echo 'Section "Device"
+  Identifier "Intel Graphics"
+  Driver "modesetting"
+  Option "TearFree" "true"
+EndSection' | sudo tee /etc/X11/xorg.conf.d/20-intel.conf
 
 inxi -G
 
@@ -262,10 +267,15 @@ pythonPackage="python3.$pythonVer"
 $AddRepo ppa:deadsnakes/ppa
 $InstallApt $pythonPackage $pythonPackage-dev $pythonPackage-gdbm $pythonPackage-venv
 
+#grub
+sudo update-grub
 
 #Reinstall grub
 # sudo grub-install /dev/nvme0n1
 # sudo cat /boot/efi/EFI/ubuntu/grub.cfg
+
+#show current boot parameters
+cat /proc/cmdline
 
 exit
 exit
@@ -338,3 +348,47 @@ $InstallApt linux-xanmod linux-xanmod-edge
 #        Option "TapButton1" "1"
 #        Option "TapButton2" "3"
 #        Option "TapButton3" "2"
+
+# Panel Self Refresh (PSR), a power saving feature used by Intel iGPUs is known to cause flickering in some instances. A temporary solution is to disable this feature using the kernel parameter i915.enable_psr=0
+#
+# Low-powered Intel processors and/or laptop processors have a tendency to randomly hang or crash due to the problems with the power management features found in low-power Intel chips. If such a crash happens, you will not see any logs reporting this problem. Adding the following Kernel parameters may help to resolve the problem.
+# Note: It is not advised to use all three of the below kernel parameters together.
+#
+# intel_idle.max_cstate=1 i915.enable_dc=0 ahci.mobile_lpm_policy=1
+#
+# ahci.mobile_lpm_policy=1 fixes a hang on several Lenovo laptops and some Acer notebooks due to problematic SATA controller power management. That workaround is strictly not related to Intel graphics but it does solve related issues. Adding this kernel parameter sets the link power management from firmware default to maximum performance and will also solve hangs when you change display brightness on certain Lenovo machines but increases idle power consumption by 1-1.5 W on modern ultrabooks. For further information, especially about the other states, see the Linux kernel mailing list and Red Hat documentation.
+#
+# i915.enable_dc=0 disables GPU power management. This does solve random hangs on certain Intel systems, notably Goldmount and Kaby Lake Refresh chips. Using this parameter does result in higher power use and shorter battery life on laptops/notebooks.
+#
+# intel_idle.max_cstate=1 limits the processors sleep states, it prevents the processor from going into deep sleep states. That is absolutely not ideal and does result in higher power use and lower battery life. However, it does solve random hangs on many Intel systems. Use this if you have a Intel Baytrail or a Kaby Lake Refresh chip. Intel "Baytrail" chips were known to randomly hang without this kernel parameter due to a hardware flaw, theoretically fixed 2019-04-26. More information about the max_cstate parameter can be found in the kernel documentation and about the cstates in general on a writeup on GitHub.
+#
+# If you try adding intel_idle.max_cstate=1 i915.enable_dc=0 ahci.mobile_lpm_policy=1 in the hope of fixing frequent hangs and that solves the issue you should later remove one by one to see which of them actually helped you solve the issue. Running with cstates and display power management disabled is not advisable if the actual problem is related to SATA power management and ahci.mobile_lpm_policy=1 is the one that actually solves it.
+#
+# Some NVMe devices may exhibit issues related to power saving (APST). This is a known issue for Kingston A2000 [8] as of firmware S5Z42105 and has previously been reported on Samsung NVMe drives (Linux v4.10) [9][10]
+#
+# A failure renders the device unusable until system reset, with kernel logs similar to:
+#
+#  nvme nvme0: I/O 566 QID 7 timeout, aborting
+#  nvme nvme0: I/O 989 QID 1 timeout, aborting
+#  nvme nvme0: I/O 990 QID 1 timeout, aborting
+#  nvme nvme0: I/O 840 QID 6 timeout, reset controller
+#  nvme nvme0: I/O 24 QID 0 timeout, reset controller
+#  nvme nvme0: Device not ready; aborting reset, CSTS=0x1
+#  ...
+#  nvme nvme0: Device not ready; aborting reset, CSTS=0x1
+#  nvme nvme0: Device not ready; aborting reset, CSTS=0x1
+#  nvme nvme0: failed to set APST feature (-19)
+#
+# As a workaround, add the kernel parameter nvme_core.default_ps_max_latency_us=0 to completely disable APST, or set a custom threshold to disable specific states.
+
+# The NMI watchdog is a debugging feature to catch hardware hangs that cause a kernel panic. On some systems it can generate a lot of interrupts, causing a noticeable increase in power usage:
+#
+# /etc/sysctl.d/disable_watchdog.conf
+#
+# kernel.nmi_watchdog = 0
+#
+# or add nmi_watchdog=0 to the kernel line to disable it completely from early boot.
+
+# Since Linux 5.9, it is possible to set the cpufreq.default_governor kernel option.[6] To set the desired scaling parameters at boot, configure the cpupower utility and enable its systemd service. Alternatively, systemd-tmpfiles or udev rules can be used.
+
+# You can also run the cat /proc/cmdline command to check the boot parameters. If you find iommu=on in the output, it confirms that IOMMU is enabled.
