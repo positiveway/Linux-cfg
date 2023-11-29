@@ -13,13 +13,14 @@ Flatpak="flatpak install -y --noninteractive"
 DocsDir="$HOME/Documents"
 LoginStartupDir="/etc/profile.d"
 
-IsFirstRun=false
+IsFirstRun=true
 
 #Never do full-upgrade, some packages break for example Wine dependencies
 
 # DE:
 # Change fonts to JB Mono NL Light 16pt.
 # Antialising: slight. Subpixel: RGB. Force DPI: 192
+# LXQt Theme: Kvantum. GTK Theme: Arc-Darcker
 
 # Openbox:
 # Change fonts to JB Mono NL Light 16pt.
@@ -29,11 +30,17 @@ IsFirstRun=false
 # Updates check every 2 weeks. Only notify.
 # Locale switch: Right Alt only
 
+# qt5ct:
+#
+
 # Firefox:
 # JB Mono NL Light fonts 16pt for everything. Min size: 16pt. Scale text only 150%. Don't allow pages to choose fonts.
 
-# Kate:
+# Kate & Terminal:
 # JB Mono NL Light font 16pt
+
+# Telegram:
+# Settings -> Advanced -> Experimental -> Show panel by click
 
 # Intelleji:
 # UI Font: JB Mono NL Light 20pt. Editor font: JB Mono 26pt.
@@ -44,9 +51,7 @@ set -e
 
 #Relative paths
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-ExtDriveDir="$( echo $SCRIPT_DIR | cut -f 1,2,3,4 -d "/" )"
 echo "Script directory: $SCRIPT_DIR"
-echo "External drive directory: $ExtDriveDir"
 
 
 CurDesktop=$(env | grep XDG_CURRENT_DESKTOP)
@@ -86,7 +91,8 @@ $AddRepo ppa:cappelikan/ppa
 $InstallApt mainline
 
 #controller
-$InstallApt clang libsdl2-dev libdrm-dev libhidapi-dev libusb-1.0-0 libusb-1.0-0-dev libevdev-dev
+$InstallApt clang libsdl2-dev libdrm-dev libhidapi-dev libusb-1.0-0 libusb-1.0-0-dev libudev-dev libevdev-dev
+sudo usermod -a -G input user
 
 #Dim screen
 $InstallApt x11-xserver-utils brightnessctl
@@ -121,17 +127,6 @@ $CopyFiles $SCRIPT_DIR/$ScriptName $ScriptDestPath
 sudo chmod +x $ScriptDestPath
 
 #Intel GPU
-# $InstallApt xserver-xorg-video-intel
-# echo 'Section "Device"
-#     Identifier    "Intel Graphics"
-#     Driver        "intel"
-#     Option      "AccelMethod"  "uxa"
-#     Option      "DRI"  "iris"
-#     Option      "TearFree"        "true"
-#     Option      "TripleBuffer"    "true"
-#     Option      "SwapbuffersWait" "true"
-# EndSection' | sudo tee /etc/X11/xorg.conf.d/20-intel.conf
-
 $RemoveApt xserver-xorg-video-intel
 $RemoveFiles /etc/X11/xorg.conf.d/20-intel.conf
 
@@ -139,6 +134,9 @@ inxi -G
 
 #Fonts
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)"
+
+# QT Themes:
+$InstallApt qt5ct qt5-style-plugins
 
 #Git
 git config --global user.email "PositiveWay05@gmail.com"
@@ -189,7 +187,13 @@ echo "First run:"
 #rust
 $DownloadStdOut https://sh.rustup.rs | sh -s -- -y
 source "$HOME/.cargo/env"
-rustup default stable
+rustup install nightly
+
+# Android
+rustup target add aarch64-linux-android
+$InstallApt openjdk-17-jdk
+sudo update-alternatives --config java
+# Choose Java 17
 
 #calibre
 sudo -v && wget --no-check-certificate -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
@@ -209,9 +213,6 @@ $InstallApt imwheel zenity
 wget -O $Filepath https://gist.githubusercontent.com/AshishKapoor/6f054e43578659b4525c47bf279099ba/raw/0b2ad8b67f02ebb01d99294b0ecb6feacc078f67/mousewheel.sh
 chmod +x $Filepath
 # $Filepath
-
-#Copy pass
-cp $ExtDriveDir/Dropbox/Settings/Pass.txt $DocsDir
 fi
 
 #Flatpak
@@ -242,23 +243,6 @@ echo "LXQt specific:"
 #Lubuntu LXQt backports
 # $AddRepo ppa:lubuntu-dev/backports
 # sudo apt full-upgrade
-
-#Touchpad
-# echo 'Section "InputClass"
-#         Identifier "touchpad"
-#         MatchIsTouchpad "on"
-#         Driver "libinput"
-#         Option "Tapping" "on"
-#         Option "NaturalScrolling" "off"
-# EndSection' | sudo tee /etc/X11/xorg.conf.d/40-libinput.conf
-#reboot
-
-#        MatchDevicePath "/dev/input/event*"
-#        Option "InvY" "on"
-#        Option "ButtonMapping" "3 2 1"
-#        Option "TapButton1" "1"
-#        Option "TapButton2" "3"
-#        Option "TapButton3" "2"
 fi
 
 if $IsGnome
@@ -285,6 +269,12 @@ $InstallApt $pythonPackage $pythonPackage-dev $pythonPackage-gdbm $pythonPackage
 
 exit
 exit
+
+ExtDriveDir="$( echo $SCRIPT_DIR | cut -f 1,2,3,4 -d "/" )"
+echo "External drive directory: $ExtDriveDir"
+
+#Copy pass
+cp $ExtDriveDir/Dropbox/Settings/Pass.txt $DocsDir
 
 #Wine & Steam
 sudo dpkg --add-architecture i386
@@ -320,3 +310,31 @@ $DownloadStdOut https://dl.xanmod.org/gpg.key | sudo apt-key --keyring /etc/apt/
 $UpdateApt
 $InstallApt linux-xanmod linux-xanmod-edge
 
+#Intel GPU
+# $InstallApt xserver-xorg-video-intel
+# echo 'Section "Device"
+#     Identifier    "Intel Graphics"
+#     Driver        "intel"
+#     Option      "AccelMethod"  "uxa"
+#     Option      "DRI"  "iris"
+#     Option      "TearFree"        "true"
+#     Option      "TripleBuffer"    "true"
+#     Option      "SwapbuffersWait" "true"
+# EndSection' | sudo tee /etc/X11/xorg.conf.d/20-intel.conf
+
+#Touchpad
+# echo 'Section "InputClass"
+#         Identifier "touchpad"
+#         MatchIsTouchpad "on"
+#         Driver "libinput"
+#         Option "Tapping" "on"
+#         Option "NaturalScrolling" "off"
+# EndSection' | sudo tee /etc/X11/xorg.conf.d/40-libinput.conf
+#reboot
+
+#        MatchDevicePath "/dev/input/event*"
+#        Option "InvY" "on"
+#        Option "ButtonMapping" "3 2 1"
+#        Option "TapButton1" "1"
+#        Option "TapButton2" "3"
+#        Option "TapButton3" "2"
