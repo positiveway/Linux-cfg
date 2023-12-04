@@ -11,8 +11,8 @@ xinput set-prop "$DeviceName" "libinput Natural Scrolling Enabled" 0
 xinput set-prop "$DeviceName" "libinput High Resolution Wheel Scroll Enabled" 1
 xinput set-prop "$DeviceName" "libinput Scrolling Pixel Distance" 15
 xinput set-prop "$DeviceName" "libinput Accel Speed" 0.0
-xinput set-prop "$DeviceName" "libinput Accel Profile Enabled" 1, 0
-xinput set-prop "$DeviceName" "libinput Click Method Enabled" 0, 0
+xinput set-prop "$DeviceName" "libinput Accel Profile Enabled" 1, 1
+xinput set-prop "$DeviceName" "libinput Click Method Enabled" 0, 1
 
 xinput list-props "$DeviceName"
 
