@@ -22,6 +22,15 @@ IsFirstRun=false
 # Antialising: slight. Subpixel: RGB. Force DPI: 192
 # LXQt Theme: Kvantum. GTK Theme: Arc-Darcker
 
+# Open LXQt Configuration Center -> Session Settings or run lxqt-config-session
+# Set Global Screen scaling to 2.0
+
+# Environment Variables (Advanced):
+# Add QT_SCALE_FACTOR with value 2
+# Add GDK_DPI_SCALE with value 1
+# Add XCURSOR_SIZE with value 64
+# Set GDK_SCALE to 2
+
 # Openbox:
 # Change fonts to JB Mono NL Light 16pt.
 # Mouse: Check "Focus Windows". Check both "Move focus"
@@ -36,6 +45,9 @@ IsFirstRun=false
 # Firefox:
 # JB Mono NL Light fonts 16pt for everything. Min size: 16pt. Scale text only 150%. Don't allow pages to choose fonts.
 
+# To control Firefox UI scaling:
+# Set layout.css.devPixelsPerPx to 2.0 or different value (default is -1) on the about:config page
+
 # Kate & Terminal:
 # JB Mono NL Light font 16pt
 
@@ -43,7 +55,7 @@ IsFirstRun=false
 # Settings -> Advanced -> Experimental -> Show panel by click
 
 # Intelleji:
-# UI Font: JB Mono NL Light 20pt. Editor font: JB Mono 26pt.
+# UI Font: JB Mono NL Light 22pt. Editor font: JB Mono 26pt.
 
 
 # exit when any command fails
@@ -188,6 +200,20 @@ $InstallApt gparted kate
 #Cpupower
 $InstallApt libicu-dev libxcb-cursor-dev cpupower-gui
 
+#Warp
+# Add cloudflare gpg key
+curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
+# Add this repo to your apt repositories
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/cloudflare-client.list
+# Install
+$UpdateApt && $InstallApt cloudflare-warp
+warp-cli register
+warp-cli set-mode warp+doh
+warp-cli set-families-mode off
+warp-cli enable-wifi
+warp-cli connect
+
+
 #Telegram
 if [  ! -d "$DocsDir/Telegram" ]; then
 echo "Telegram is not installed. Installing..."
@@ -212,6 +238,13 @@ rustup target add aarch64-linux-android
 $InstallApt openjdk-17-jdk
 sudo update-alternatives --config java
 # Choose Java 17
+
+#python
+pythonVer="11"
+
+pythonPackage="python3.$pythonVer"
+$AddRepo ppa:deadsnakes/ppa
+$InstallApt $pythonPackage $pythonPackage-dev $pythonPackage-gdbm $pythonPackage-venv
 
 #calibre
 sudo -v && wget --no-check-certificate -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
@@ -272,13 +305,6 @@ $InstallApt gedit gnome-shell-extensions chrome-gnome-shell gnome-tweaks
 #controller gnome
 $InstallApt libgtk-3-dev libgtkmm-3.0-dev libappindicator3-dev gir1.2-appindicator3-0.1
 fi
-
-#python
-pythonVer="11"
-
-pythonPackage="python3.$pythonVer"
-$AddRepo ppa:deadsnakes/ppa
-$InstallApt $pythonPackage $pythonPackage-dev $pythonPackage-gdbm $pythonPackage-venv
 
 #grub
 sudo update-grub

@@ -8,9 +8,18 @@ GRUB_SAVEDEFAULT=true
 GRUB_TIMEOUT_STYLE=menu
 GRUB_TIMEOUT=20
 GRUB_DISTRIBUTOR=`lsb_release -i -s 2> /dev/null || echo Debian`
-GRUB_CMDLINE_LINUX_DEFAULT="quiet splash mitigations=off nmi_watchdog=0 split_lock_detect=off i915.enable_psr=0 isolcpus=8,9,10,11,12,13,14,15 zswap.enabled=0 i915.enable_dc=0 ahci.mobile_lpm_policy=1 nvme_core.default_ps_max_latency_us=0 pcie_aspm.policy=performance  intel_idle.max_cstate=4"
-# intel_pstate=enable
-# snd_hda_intel.dmic_detect=0 isolcpus=8,9,10,11,12,13,14,15
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash mitigations=off nmi_watchdog=0 split_lock_detect=off zswap.enabled=0 i915.enable_psr=0 isolcpus=8,9,10,11,12,13,14,15 intel_idle.max_cstate=4 i915.enable_dc=0 nvme_core.default_ps_max_latency_us=0 intel_pstate=enable"
+
+#i915.enable_psr=0 - screen flickering prevention
+#i915.enable_dc=0
+#isolcpus=8,9,10,11,12,13,14,15
+#intel_idle.max_cstate=4
+#nvme_core.default_ps_max_latency_us=0
+#pcie_aspm.policy=performance
+#ahci.mobile_lpm_policy=1
+#intel_pstate=enable - mandatory for good performance
+#snd_hda_intel.dmic_detect=0
+
 GRUB_CMDLINE_LINUX=""
 
 # Uncomment to enable BadRAM filtering, modify to suit your needs

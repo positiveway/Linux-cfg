@@ -5,7 +5,7 @@ DeviceName="IMG4100:00 4D49:4150 Touchpad"
 xinput set-prop "$DeviceName" "libinput Tapping Enabled" 1
 xinput set-prop "$DeviceName" "libinput Disable While Typing Enabled" 1
 xinput set-prop "$DeviceName" "libinput Tapping Drag Enabled" 1
-xinput set-prop "$DeviceName" "libinput Left Handed Enabled" 1
+xinput set-prop "$DeviceName" "libinput Left Handed Enabled" 0
 xinput set-prop "$DeviceName" "libinput Middle Emulation Enabled" 0
 xinput set-prop "$DeviceName" "libinput Natural Scrolling Enabled" 0
 xinput set-prop "$DeviceName" "libinput High Resolution Wheel Scroll Enabled" 1
