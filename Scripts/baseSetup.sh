@@ -11,7 +11,6 @@ SysCtlUser="systemctl --user"
 SysCtl="sudo systemctl"
 Flatpak="flatpak install -y --noninteractive"
 DocsDir="$HOME/Documents"
-StartupScriptsDir="$DocsDir/Scripts"
 LoginStartupDir="/etc/profile.d"
 
 IsFirstRun=false
@@ -107,9 +106,6 @@ $InstallApt libfuse2
 $InstallApt clang libsdl2-dev libdrm-dev libhidapi-dev libusb-1.0-0 libusb-1.0-0-dev libudev-dev libevdev-dev
 sudo usermod -a -G input user
 
-#Create StartupScriptsDir
-mkdir -p "$StartupScriptsDir"
-
 #Dim screen
 $InstallApt x11-xserver-utils brightnessctl
 
@@ -121,23 +117,16 @@ $InstallApt xserver-xorg-input-libinput
 #Set right speaker +45% louder than left.
 $InstallApt alsa-tools firmware-sof-signed
 
-for ScriptName in "dim_screen.sh" "fix_touchpad.sh"
+#Copy scripts to startup
+for ScriptName in "dim_screen.sh" "fix_touchpad.sh" "fix_samsung_audio.sh"
 do
 ScriptDestPath="$LoginStartupDir/$ScriptName"
 $CopyFiles $SCRIPT_DIR/$ScriptName $ScriptDestPath
 sudo chmod +x $ScriptDestPath
 done
 
-#Run scripts at the latest stage of user login
-for ScriptName in "necessary-verbs.sh"
-do
-ScriptDestPath="$StartupScriptsDir/$ScriptName"
-$CopyFiles $SCRIPT_DIR/$ScriptName $ScriptDestPath
-sudo chmod +x $ScriptDestPath
-done
-
-ScriptName="rc.local"
-ScriptDestPath="/etc/$ScriptName"
+ScriptName="necessary-verbs.sh"
+ScriptDestPath="$DocsDir/$ScriptName"
 $CopyFiles $SCRIPT_DIR/$ScriptName $ScriptDestPath
 sudo chmod +x $ScriptDestPath
 

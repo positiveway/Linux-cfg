@@ -1,3 +1,5 @@
+Password="sf"
+
 #fix tearing
 #xrandr --output eDP-1 --set TearFree on
 
@@ -9,4 +11,4 @@ xrandr --output eDP-1 --brightness 0.3
 xrandr --current --verbose
 
 brightnessctl -l
-brightnessctl -d "intel_backlight" set 100%
+sudo -S <<< "$Password" brightnessctl -d "intel_backlight" set 100%

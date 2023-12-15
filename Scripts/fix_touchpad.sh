@@ -1,6 +1,5 @@
-set -e
-
 #xmodmap -e "pointer = 1 1 3 5 4 7 6 8 9 10 11 12"
+
 xinput list
 DeviceName="IMG4100:00 4D49:4150 Touchpad"
 
