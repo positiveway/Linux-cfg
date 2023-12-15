@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+Password="sf"
+ScriptsDir="/home/user/Documents/Scripts"
+
+#Samsung sound
+sudo -S <<< "$Password" $ScriptsDir/necessary-verbs.sh
+
+exit 0

@@ -11,6 +11,7 @@ SysCtlUser="systemctl --user"
 SysCtl="sudo systemctl"
 Flatpak="flatpak install -y --noninteractive"
 DocsDir="$HOME/Documents"
+StartupScriptsDir="$DocsDir/Scripts"
 LoginStartupDir="/etc/profile.d"
 
 IsFirstRun=false
@@ -44,6 +45,8 @@ IsFirstRun=false
 
 # Firefox:
 # JB Mono NL Light fonts 16pt for everything. Min size: 16pt. Scale text only 150%. Don't allow pages to choose fonts.
+
+# layers.acceleration.force-enabled to true in about:config
 
 # To control Firefox UI scaling:
 # Set layout.css.devPixelsPerPx to 2.0 or different value (default is -1) on the about:config page
@@ -94,46 +97,47 @@ $InstallApt ppa-purge
 #Restore NTFS mounting
 $InstallApt fuse3 ntfs-3g
 
+#cpupower
+$InstallApt linux-tools-common linux-tools-`uname -r`
+
 #AppImage
 $InstallApt libfuse2
-
-#mainline kernel downloader
-$AddRepo ppa:cappelikan/ppa
-$InstallApt mainline
 
 #controller
 $InstallApt clang libsdl2-dev libdrm-dev libhidapi-dev libusb-1.0-0 libusb-1.0-0-dev libudev-dev libevdev-dev
 sudo usermod -a -G input user
 
+#Create StartupScriptsDir
+mkdir -p "$StartupScriptsDir"
+
 #Dim screen
 $InstallApt x11-xserver-utils brightnessctl
-
-ScriptName="dim_screen.sh"
-ScriptDestPath="$LoginStartupDir/$ScriptName"
-$CopyFiles $SCRIPT_DIR/$ScriptName $ScriptDestPath
-sudo chmod +x $ScriptDestPath
-# sudo chmod 744 $ScriptDestPath
 
 #Touchpad
 $RemoveApt xserver-xorg-input-synaptics
 $InstallApt xserver-xorg-input-libinput
 
-ScriptName="fix_touchpad.sh"
-ScriptDestPath="$LoginStartupDir/$ScriptName"
-$CopyFiles $SCRIPT_DIR/$ScriptName $ScriptDestPath
-sudo chmod +x $ScriptDestPath
-
 #Samsung sound
-#Set right speaker +50% louder than left.
+#Set right speaker +45% louder than left.
 $InstallApt alsa-tools firmware-sof-signed
 
-ScriptName="necessary-verbs.sh"
-ScriptDestPath="$DocsDir/$ScriptName"
+for ScriptName in "dim_screen.sh" "fix_touchpad.sh"
+do
+ScriptDestPath="$LoginStartupDir/$ScriptName"
 $CopyFiles $SCRIPT_DIR/$ScriptName $ScriptDestPath
 sudo chmod +x $ScriptDestPath
+done
 
-ScriptName="fix_samsung_audio.sh"
-ScriptDestPath="$LoginStartupDir/$ScriptName"
+#Run scripts at the latest stage of user login
+for ScriptName in "necessary-verbs.sh"
+do
+ScriptDestPath="$StartupScriptsDir/$ScriptName"
+$CopyFiles $SCRIPT_DIR/$ScriptName $ScriptDestPath
+sudo chmod +x $ScriptDestPath
+done
+
+ScriptName="rc.local"
+ScriptDestPath="/etc/$ScriptName"
 $CopyFiles $SCRIPT_DIR/$ScriptName $ScriptDestPath
 sudo chmod +x $ScriptDestPath
 
@@ -172,13 +176,25 @@ $InstallApt qt5ct qt5-style-plugins
 git config --global user.email "PositiveWay05@gmail.com"
 git config --global user.name "Andrew"
 
+#WITHOUT ACTIVATING WARP ADDING REPO CAN CAUSE CONNECTION TIMEOUT
+#Warp
+# Add cloudflare gpg key
+curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
+# Add this repo to your apt repositories
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/cloudflare-client.list
+# Install
+$UpdateApt && $InstallApt cloudflare-warp
+warp-cli register
+warp-cli set-mode warp+doh
+warp-cli set-families-mode off
+warp-cli enable-wifi
+warp-cli connect
+
 #liquorix
 $AddRepo ppa:damentz/liquorix
 $InstallApt linux-image-liquorix-amd64 linux-headers-liquorix-amd64
 
 # Firefox
-# Manual: layers.acceleration.force-enabled to true in about:config
-
 # disable exitting on error temporarily
 set +e
 sudo snap remove firefox
@@ -194,25 +210,18 @@ Pin-Priority: 1001
 echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:${distro_codename}";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox
 $InstallApt firefox
 
+#Enable touchscreen support
+grep -qxF 'MOZ_USE_XINPUT2 DEFAULT=1' /etc/security/pam_env.conf || echo 'MOZ_USE_XINPUT2 DEFAULT=1' | sudo tee -a /etc/security/pam_env.conf
+
 #Apps
 $InstallApt gparted kate
 
 #Cpupower
 $InstallApt libicu-dev libxcb-cursor-dev cpupower-gui
 
-#Warp
-# Add cloudflare gpg key
-curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
-# Add this repo to your apt repositories
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/cloudflare-client.list
-# Install
-$UpdateApt && $InstallApt cloudflare-warp
-warp-cli register
-warp-cli set-mode warp+doh
-warp-cli set-families-mode off
-warp-cli enable-wifi
-warp-cli connect
-
+#mainline kernel downloader
+$AddRepo ppa:cappelikan/ppa
+$InstallApt mainline
 
 #Telegram
 if [  ! -d "$DocsDir/Telegram" ]; then
@@ -316,6 +325,9 @@ sudo update-grub
 #show current boot parameters
 cat /proc/cmdline
 cpupower frequency-info
+
+#Disconnect Warp
+warp-cli disconnect
 
 exit
 exit

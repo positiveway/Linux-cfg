@@ -18,6 +18,10 @@ GRUB_CMDLINE_LINUX_DEFAULT="quiet splash mitigations=off nmi_watchdog=0 split_lo
 #pcie_aspm.policy=performance
 #ahci.mobile_lpm_policy=1
 #intel_pstate=enable - mandatory for good performance and to avoid overheating
+#nmi_watchdog=0
+#split_lock_detect=off
+#zswap.enabled=0
+#mitigations=off
 #snd_hda_intel.dmic_detect=0
 
 GRUB_CMDLINE_LINUX=""
