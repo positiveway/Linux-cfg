@@ -1,3 +1,3 @@
 Password="sf"
 
-sudo -S <<< "$Password" /home/user/Documents/necessary-verbs.sh
+sudo -S <<< "$Password" $HOME/Documents/Scripts/necessary-verbs.sh

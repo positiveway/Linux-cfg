@@ -11,9 +11,10 @@ SysCtlUser="systemctl --user"
 SysCtl="sudo systemctl"
 Flatpak="flatpak install -y --noninteractive"
 DocsDir="$HOME/Documents"
+ScriptsDir="$DocsDir/Scripts"
 LoginStartupDir="/etc/profile.d"
 
-IsFirstRun=false
+IsFirstRun=true
 
 #Never do full-upgrade, some packages break for example Wine dependencies
 
@@ -64,9 +65,14 @@ IsFirstRun=false
 set -e
 
 #Relative paths
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-echo "Script directory: $SCRIPT_DIR"
+THIS_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+echo "Script directory: $THIS_SCRIPT_DIR"
 
+#Make folders
+mkdir -p $ScriptsDir
+
+UbuntuCodename=$(lsb_release -cs)
+echo "Ubuntu Codename: $UbuntuCodename"
 
 CurDesktop=$(env | grep XDG_CURRENT_DESKTOP)
 echo $CurDesktop
@@ -96,11 +102,20 @@ $InstallApt ppa-purge
 #Restore NTFS mounting
 $InstallApt fuse3 ntfs-3g
 
-#cpupower
-$InstallApt linux-tools-common linux-tools-`uname -r`
-
 #AppImage
 $InstallApt libfuse2
+
+#Git
+git config --global user.email "PositiveWay05@gmail.com"
+git config --global user.name "Andrew"
+
+#Fix locale
+StrContent='export LANGUAGE=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8'
+FileToAdd="$HOME/.profile"
+
+grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAdd
 
 #controller
 $InstallApt clang libsdl2-dev libdrm-dev libhidapi-dev libusb-1.0-0 libusb-1.0-0-dev libudev-dev libevdev-dev
@@ -121,14 +136,17 @@ $InstallApt alsa-tools firmware-sof-signed
 for ScriptName in "dim_screen.sh" "fix_touchpad.sh" "fix_samsung_audio.sh"
 do
 ScriptDestPath="$LoginStartupDir/$ScriptName"
-$CopyFiles $SCRIPT_DIR/$ScriptName $ScriptDestPath
+$CopyFiles $THIS_SCRIPT_DIR/$ScriptName $ScriptDestPath
 sudo chmod +x $ScriptDestPath
 done
 
-ScriptName="necessary-verbs.sh"
-ScriptDestPath="$DocsDir/$ScriptName"
-$CopyFiles $SCRIPT_DIR/$ScriptName $ScriptDestPath
+#Copy to Documents/Scripts
+for ScriptName in "necessary-verbs.sh" "steam.sh"
+do
+ScriptDestPath="$ScriptsDir/$ScriptName"
+$CopyFiles $THIS_SCRIPT_DIR/$ScriptName $ScriptDestPath
 sudo chmod +x $ScriptDestPath
+done
 
 #Intel GPU
 $RemoveApt xserver-xorg-video-intel
@@ -141,9 +159,6 @@ $RemoveFiles /etc/X11/xorg.conf.d/20-intel.conf
 # EndSection' | sudo tee /etc/X11/xorg.conf.d/20-intel.conf
 
 inxi -G
-
-#Fonts
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)"
 
 # Wifi
 # sudo nano /etc/NetworkManager/conf.d/default-wifi-powersave-on.conf
@@ -161,9 +176,14 @@ inxi -G
 # QT Themes:
 $InstallApt qt5ct qt5-style-plugins
 
-#Git
-git config --global user.email "PositiveWay05@gmail.com"
-git config --global user.name "Andrew"
+#Apps
+$InstallApt gparted kate
+
+#Cpupower
+$InstallApt linux-tools-common linux-tools-`uname -r`
+
+#Cpupower-gui
+$InstallApt libicu-dev libxcb-cursor-dev cpupower-gui
 
 #WITHOUT ACTIVATING WARP ADDING REPO CAN CAUSE CONNECTION TIMEOUT
 #Warp
@@ -179,9 +199,8 @@ warp-cli set-families-mode off
 warp-cli enable-wifi
 warp-cli connect
 
-#liquorix
-$AddRepo ppa:damentz/liquorix
-$InstallApt linux-image-liquorix-amd64 linux-headers-liquorix-amd64
+#Proprietary packages & Steam
+$AddRepo multiverse
 
 # Firefox
 # disable exitting on error temporarily
@@ -200,31 +219,14 @@ echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:${distro_codenam
 $InstallApt firefox
 
 #Enable touchscreen support
-grep -qxF 'MOZ_USE_XINPUT2 DEFAULT=1' /etc/security/pam_env.conf || echo 'MOZ_USE_XINPUT2 DEFAULT=1' | sudo tee -a /etc/security/pam_env.conf
+StrContent="MOZ_USE_XINPUT2 DEFAULT=1"
+FileToAdd="/etc/security/pam_env.conf"
 
-#Apps
-$InstallApt gparted kate
-
-#Cpupower
-$InstallApt libicu-dev libxcb-cursor-dev cpupower-gui
+grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAdd
 
 #mainline kernel downloader
 $AddRepo ppa:cappelikan/ppa
 $InstallApt mainline
-
-#Telegram
-if [  ! -d "$DocsDir/Telegram" ]; then
-echo "Telegram is not installed. Installing..."
-
-Filepath="$DocsDir/tg.tar.xz"
-wget -O $Filepath https://telegram.org/dl/desktop/linux
-tar -xf $Filepath -C $DocsDir
-$RemoveFiles $Filepath
-fi
-
-if $IsFirstRun
-then
-echo "First run:"
 
 #rust
 $DownloadStdOut https://sh.rustup.rs | sh -s -- -y
@@ -244,17 +246,38 @@ pythonPackage="python3.$pythonVer"
 $AddRepo ppa:deadsnakes/ppa
 $InstallApt $pythonPackage $pythonPackage-dev $pythonPackage-gdbm $pythonPackage-venv
 
+#Telegram
+if [  ! -d "$DocsDir/Telegram" ]; then
+echo "Telegram is not installed. Installing..."
+
+Filepath="$DocsDir/tg.tar.xz"
+wget -O $Filepath https://telegram.org/dl/desktop/linux
+tar -xf $Filepath -C $DocsDir
+$RemoveFiles $Filepath
+fi
+
+if $IsFirstRun
+then
+echo "First run:"
+
+#Fonts
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)"
+
 #calibre
 sudo -v && wget --no-check-certificate -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 
+#liquorix
+# $AddRepo ppa:damentz/liquorix
+# $InstallApt linux-image-liquorix-amd64 linux-headers-liquorix-amd64
+
 #bdprochot
 prochotRepo="turnoff-BD-PROCHOT"
-Filepath="$DocsDir/$prochotRepo"
+Filepath="$ScriptsDir/$prochotRepo"
 $RemoveFiles $Filepath
 git clone https://github.com/yyearth/$prochotRepo.git $Filepath
 
 #mouse
-Filepath="$DocsDir/mousewheel.sh"
+Filepath="$ScriptsDir/mousewheel.sh"
 $RemoveFiles $Filepath
 
 $InstallApt imwheel zenity
@@ -263,13 +286,6 @@ wget -O $Filepath https://gist.githubusercontent.com/AshishKapoor/6f054e43578659
 chmod +x $Filepath
 # $Filepath
 fi
-
-#Flatpak
-$InstallApt flatpak plasma-discover-backend-flatpak
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-
-#ProtopUpQt
-$Flatpak flathub net.davidotek.pupgui2
 
 if $IsKDE
 then
@@ -304,6 +320,13 @@ $InstallApt gedit gnome-shell-extensions chrome-gnome-shell gnome-tweaks
 $InstallApt libgtk-3-dev libgtkmm-3.0-dev libappindicator3-dev gir1.2-appindicator3-0.1
 fi
 
+#Flatpak
+$InstallApt flatpak plasma-discover-backend-flatpak
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+#ProtopUpQt
+$Flatpak flathub net.davidotek.pupgui2
+
 #grub
 sudo update-grub
 
@@ -316,22 +339,47 @@ cat /proc/cmdline
 cpupower frequency-info
 
 #Disconnect Warp
-warp-cli disconnect
+# warp-cli disconnect
 
 exit
 exit
 
-ExtDriveDir="$( echo $SCRIPT_DIR | cut -f 1,2,3,4 -d "/" )"
+#Surfshark
+curl -f https://downloads.surfshark.com/linux/debian-install.sh --output surfshark-install.sh #gets the installation script
+sh surfshark-install.sh #installs surfshark
+
+#Enable 32bit architecture for Wine & Steam
+sudo dpkg --add-architecture i386
+$UpdateApt
+
+#Install wine
+sudo mkdir -pm755 /etc/apt/keyrings
+sudo wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
+
+sudo wget -NP /etc/apt/sources.list.d/ "https://dl.winehq.org/wine-builds/ubuntu/dists/$UbuntuCodename/winehq-$UbuntuCodename.sources"
+$UpdateApt
+sudo apt install --install-recommends winehq-stable
+
+#winetricks
+$InstallApt cabextract p7zip unrar unzip wget zenity
+Filepath="$ScriptsDir/winetricks"
+$RemoveFiles $Filepath
+
+wget -O $Filepath https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
+chmod +x $Filepath
+sh $Filepath corefonts vcrun6
+
+#Steam
+$InstallApt steam
+
+#Playonlinux
+$InstallApt playonlinux
+
+ExtDriveDir="$( echo $THIS_SCRIPT_DIR | cut -f 1,2,3,4 -d "/" )"
 echo "External drive directory: $ExtDriveDir"
 
 #Copy pass
 cp $ExtDriveDir/Dropbox/Settings/Pass.txt $DocsDir
-
-#Wine & Steam
-sudo dpkg --add-architecture i386
-$UpdateApt
-$InstallApt wine64 wine32 libasound2-plugins:i386 libsdl2-2.0-0:i386 libdbus-1-3:i386 libsqlite3-0:i386
-$InstallApt steam
 
 #Mesa drivers
 $AddRepo ppa:kisak/kisak-mesa
