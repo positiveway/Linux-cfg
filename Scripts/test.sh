@@ -15,6 +15,13 @@ LoginStartupDir="/etc/profile.d"
 
 set -e
 
+UbuntuCodename=$(lsb_release -cs)
+echo "Ubuntu Codename: $UbuntuCodename"
+
+IsUbuntuJammy=false && [[ "$UbuntuCodename" == jammy ]] && IsUbuntuJammy=true
+echo "IsUbuntuJammy: $IsUbuntuJammy"
+exit
+
 StrContent='export LANGUAGE=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8'
@@ -26,10 +33,8 @@ StrContent="MOZ_USE_XINPUT2 DEFAULT=1"
 FileToAdd="/etc/security/pam_env.conf"
 
 grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAdd
-exit
 
-UbuntuCodename=$(lsb_release -c | xargs | awk '{print $NF}')
-echo "Ubuntu Codename: $UbuntuCodename"
+
 
 WineRepoPath='https://dl.winehq.org/wine-builds/ubuntu/dists/'"$UbuntuCodename"'/winehq-'"$UbuntuCodename"'.sources'
 echo "WineRepoPath: $WineRepoPath"

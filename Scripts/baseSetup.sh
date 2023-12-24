@@ -5,6 +5,7 @@ InstallPkg="sudo dpkg -i"
 UpdateApt="sudo apt update"
 DownloadStdOut="wget -O -"
 AddRepo="sudo add-apt-repository -y"
+FullUpgrade="sudo apt full-upgrade -y"
 RemoveFiles="sudo rm -rf"
 CopyFiles="sudo cp"
 SysCtlUser="systemctl --user"
@@ -73,6 +74,9 @@ mkdir -p $ScriptsDir
 
 UbuntuCodename=$(lsb_release -cs)
 echo "Ubuntu Codename: $UbuntuCodename"
+
+IsUbuntuJammy=false && [[ "$UbuntuCodename" == jammy ]] && IsUbuntuJammy=true
+echo "IsUbuntuJammy: $IsUbuntuJammy"
 
 CurDesktop=$(env | grep XDG_CURRENT_DESKTOP)
 echo $CurDesktop
@@ -299,15 +303,33 @@ sudo rm -rf .local/share/baloo/
 
 #Wayland
 $InstallApt plasma-workspace-wayland
+
+#GTK Themes
+$InstallApt kde-gtk-config
+
+if $IsUbuntuJammy
+then
+echo "Ubuntu Jammy specific:"
+
+#KDE backports
+$AddRepo ppa:kubuntu-ppa/backports
+$AddRepo ppa:kubuntu-ppa/backports-extra
+$FullUpgrade
+fi
 fi
 
 if $IsLXQt
 then
 echo "LXQt specific:"
 
-#Lubuntu LXQt backports
+if $IsUbuntuJammy
+then
+echo "Ubuntu Jammy specific:"
+
+#LXQt backports
 # $AddRepo ppa:lubuntu-dev/backports
-# sudo apt full-upgrade
+# $FullUpgrade
+fi
 fi
 
 if $IsGnome
