@@ -306,6 +306,7 @@ $InstallApt plasma-workspace-wayland
 
 #GTK Themes
 $InstallApt kde-gtk-config
+# $InstallApt gnome-settings-daemon gsettings-desktop-schemas gsettings-qt
 
 if $IsUbuntuJammy
 then
