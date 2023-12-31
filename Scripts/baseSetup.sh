@@ -113,22 +113,35 @@ $InstallApt libfuse2
 git config --global user.email "PositiveWay05@gmail.com"
 git config --global user.name "Andrew"
 
-#Fix locale
-StrContent='export LANGUAGE=en_US.UTF-8
+#Set environment variables
+EnvVariables=(
+    '#Fix locale
+export LANGUAGE=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8'
-FileToAdd="$HOME/.profile"
 
-grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAdd
+    '#Set formats
+export LC_COLLATE=en_DE.UTF-8
+export LC_MEASUREMENT=en_DE.UTF-8
+export LC_MONETARY=en_DE.UTF-8
+export LC_NUMERIC=en_DE.UTF-8
+export LC_TIME=en_DE.UTF-8'
 
-#Set scaling
-StrContent='export GDK_DPI_SCALE=1
+    '#Set scaling
+export GDK_DPI_SCALE=1
 export GDK_SCALE=2
 export QT_SCALE_FACTOR=2
 export XCURSOR_SIZE=64'
+
+    '#Configure GTK
+export GTK_CSD=0'
+)
+
 FileToAdd="$HOME/.profile"
 
-grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAdd
+for StrContent in "${EnvVariables[@]}"; do
+    grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAdd
+done
 
 #controller
 $InstallApt clang libsdl2-dev libdrm-dev libhidapi-dev libusb-1.0-0 libusb-1.0-0-dev libudev-dev libevdev-dev
@@ -272,6 +285,15 @@ fi
 if $IsFirstRun
 then
 echo "First run:"
+
+#Grub
+StrContent='GRUB_DEFAULT=saved
+GRUB_SAVEDEFAULT=true
+GRUB_TIMEOUT_STYLE=menu
+GRUB_TIMEOUT=20'
+FileToAdd="/etc/default/grub"
+
+grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAdd
 
 #Fonts
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)"
