@@ -34,6 +34,10 @@ DebianVer=$(cat /etc/debian_version)
 DebianVer=${DebianVer%/*}
 echo "$DebianVer"
 
+#Torrent clients
+$AddRepo ppa:qbittorrent-team/qbittorrent-stable
+$InstallApt qbittorrent
+
 exit
 
 #Grub

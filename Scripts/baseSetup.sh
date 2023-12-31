@@ -21,7 +21,14 @@ IsFirstRun=true
 
 # DE:
 # Change fonts to JB Mono NL Normal 16pt.
-# Antialising: slight. Subpixel: RGB. Force DPI: 192
+# Fonts DPI: 192
+
+# Config 1:
+#     Use antialised fonts: Unhecked
+#     Subpixel antialising: RGB
+#     Font hinting: Checked
+#     Hinting style: Full
+
 # LXQt Theme: Kvantum. GTK Theme: Arc-Darcker
 # Power Management: Disable Idleness watcher. Lid behaviour: Suspend
 
@@ -268,6 +275,10 @@ grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAd
 #mainline kernel downloader
 $AddRepo ppa:cappelikan/ppa
 $InstallApt mainline
+
+#Torrent clients
+$AddRepo ppa:qbittorrent-team/qbittorrent-stable
+$InstallApt qbittorrent
 
 #Telegram
 if [  ! -d "$DocsDir/Telegram" ]; then
