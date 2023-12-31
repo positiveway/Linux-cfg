@@ -23,6 +23,7 @@ IsFirstRun=true
 # Change fonts to JB Mono NL Normal 16pt.
 # Antialising: slight. Subpixel: RGB. Force DPI: 192
 # LXQt Theme: Kvantum. GTK Theme: Arc-Darcker
+# Power Management: Disable Idleness watcher. Lid behaviour: Suspend
 
 # Open LXQt Configuration Center -> Session Settings or run lxqt-config-session
 # Set Global Screen scaling to 2.0
