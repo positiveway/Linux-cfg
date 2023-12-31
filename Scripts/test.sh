@@ -21,6 +21,14 @@ echo "Ubuntu Codename: $UbuntuCodename"
 IsUbuntuJammy=false && [[ "$UbuntuCodename" == jammy ]] && IsUbuntuJammy=true
 echo "IsUbuntuJammy: $IsUbuntuJammy"
 
+if $IsUbuntuJammy
+then
+WarpDistroVer="$UbuntuCodename"
+else
+WarpDistroVer="bookworm"
+fi
+echo "$WarpDistroVer"
+
 
 DebianVer=$(cat /etc/debian_version)
 DebianVer=${DebianVer%/*}

@@ -221,8 +221,16 @@ $InstallApt libicu-dev libxcb-cursor-dev cpupower-gui
 #Warp
 # Add cloudflare gpg key
 curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
+
 # Add this repo to your apt repositories
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $DebianVer main" | sudo tee /etc/apt/sources.list.d/cloudflare-client.list
+if $IsUbuntuJammy
+then
+WarpDistroVer="$UbuntuCodename"
+else
+WarpDistroVer="bookworm"
+fi
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $WarpDistroVer main" | sudo tee /etc/apt/sources.list.d/cloudflare-client.list
+
 # Install
 $UpdateApt && $InstallApt cloudflare-warp
 warp-cli register
