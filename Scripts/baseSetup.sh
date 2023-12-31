@@ -20,7 +20,7 @@ IsFirstRun=true
 #Never do full-upgrade, some packages break for example Wine dependencies
 
 # DE:
-# Change fonts to JB Mono NL Light 16pt.
+# Change fonts to JB Mono NL Normal 16pt.
 # Antialising: slight. Subpixel: RGB. Force DPI: 192
 # LXQt Theme: Kvantum. GTK Theme: Arc-Darcker
 
@@ -34,7 +34,7 @@ IsFirstRun=true
 # Set GDK_SCALE to 2
 
 # Openbox:
-# Change fonts to JB Mono NL Light 16pt.
+# Change fonts to JB Mono NL Regular 16pt.
 # Mouse: Check "Focus Windows". Check both "Move focus"
 
 # System:
@@ -45,7 +45,7 @@ IsFirstRun=true
 #
 
 # Firefox:
-# JB Mono NL Light fonts 16pt for everything. Min size: 16pt. Scale text only 150%. Don't allow pages to choose fonts.
+# JB Mono NL fonts 16pt for everything. Min size: 16pt. Scale text only 150%. Don't allow pages to choose fonts.
 
 # layers.acceleration.force-enabled to true in about:config
 
@@ -53,13 +53,13 @@ IsFirstRun=true
 # Set layout.css.devPixelsPerPx to 2.0 or different value (default is -1) on the about:config page
 
 # Kate & Terminal:
-# JB Mono NL Light font 16pt
+# JB Mono NL Regular font 16pt
 
 # Telegram:
 # Settings -> Advanced -> Experimental -> Show panel by click
 
 # Intelleji:
-# UI Font: JB Mono NL Light 22pt. Editor font: JB Mono 26pt.
+# UI Font: JB Mono NL Medium 22pt. Editor font: JB Mono 26pt.
 
 
 # exit when any command fails
@@ -205,11 +205,11 @@ inxi -G
 # To take effect, just run:
 # sudo systemctl restart NetworkManager
 
-# QT Themes:
-$InstallApt qt5ct qt5-style-plugins
-
 #Apps
-$InstallApt gparted kate
+$InstallApt gparted kate htop
+
+# QT Themes:
+# $InstallApt qt5ct qt5-style-plugins
 
 #Cpupower
 $InstallApt linux-tools-common linux-tools-`uname -r`
@@ -268,24 +268,6 @@ grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAd
 $AddRepo ppa:cappelikan/ppa
 $InstallApt mainline
 
-#rust
-$DownloadStdOut https://sh.rustup.rs | sh -s -- -y
-source "$HOME/.cargo/env"
-rustup install nightly
-
-# Android
-rustup target add aarch64-linux-android
-$InstallApt openjdk-17-jdk
-sudo update-alternatives --config java
-# Choose Java 17
-
-#python
-pythonVer="11"
-
-pythonPackage="python3.$pythonVer"
-$AddRepo ppa:deadsnakes/ppa
-$InstallApt $pythonPackage $pythonPackage-dev $pythonPackage-gdbm $pythonPackage-venv
-
 #Telegram
 if [  ! -d "$DocsDir/Telegram" ]; then
 echo "Telegram is not installed. Installing..."
@@ -311,6 +293,27 @@ grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAd
 
 #Fonts
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)"
+
+#rust
+$DownloadStdOut https://sh.rustup.rs | sh -s -- -y
+source "$HOME/.cargo/env"
+rustup install nightly
+
+# Android
+rustup target add aarch64-linux-android
+$InstallApt openjdk-17-jdk
+sudo update-alternatives --config java
+# Choose Java 17
+
+#python
+if $IsUbuntuJammy
+then
+pythonVer="11"
+
+pythonPackage="python3.$pythonVer"
+$AddRepo ppa:deadsnakes/ppa
+$InstallApt $pythonPackage $pythonPackage-dev $pythonPackage-gdbm $pythonPackage-venv
+fi
 
 #calibre
 sudo -v && wget --no-check-certificate -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
@@ -350,7 +353,7 @@ sudo rm -rf .local/share/baloo/
 $InstallApt plasma-workspace-wayland
 
 #GTK Themes
-$InstallApt kde-gtk-config
+$InstallApt kde-config-gtk-style
 # $InstallApt gnome-settings-daemon gsettings-desktop-schemas gsettings-qt
 
 if $IsUbuntuJammy
