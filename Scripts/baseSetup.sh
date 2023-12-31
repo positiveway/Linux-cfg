@@ -78,6 +78,11 @@ echo "Ubuntu Codename: $UbuntuCodename"
 IsUbuntuJammy=false && [[ "$UbuntuCodename" == jammy ]] && IsUbuntuJammy=true
 echo "IsUbuntuJammy: $IsUbuntuJammy"
 
+DebianVer=$(cat /etc/debian_version)
+DebianVer=${DebianVer%/*}
+echo "DebianVer $DebianVer"
+
+
 CurDesktop=$(env | grep XDG_CURRENT_DESKTOP)
 echo $CurDesktop
 
@@ -184,6 +189,7 @@ $RemoveFiles /etc/X11/xorg.conf.d/20-intel.conf
 #   Option "TearFree" "true"
 # EndSection' | sudo tee /etc/X11/xorg.conf.d/20-intel.conf
 
+$InstallApt inxi
 inxi -G
 
 # Wifi
@@ -216,7 +222,7 @@ $InstallApt libicu-dev libxcb-cursor-dev cpupower-gui
 # Add cloudflare gpg key
 curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
 # Add this repo to your apt repositories
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/cloudflare-client.list
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $DebianVer main" | sudo tee /etc/apt/sources.list.d/cloudflare-client.list
 # Install
 $UpdateApt && $InstallApt cloudflare-warp
 warp-cli register

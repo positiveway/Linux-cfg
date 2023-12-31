@@ -21,6 +21,13 @@ echo "Ubuntu Codename: $UbuntuCodename"
 IsUbuntuJammy=false && [[ "$UbuntuCodename" == jammy ]] && IsUbuntuJammy=true
 echo "IsUbuntuJammy: $IsUbuntuJammy"
 
+
+DebianVer=$(cat /etc/debian_version)
+DebianVer=${DebianVer%/*}
+echo "$DebianVer"
+
+exit
+
 #Grub
 StrContent='GRUB_DEFAULT=saved
 GRUB_SAVEDEFAULT=true
@@ -30,7 +37,6 @@ FileToAdd="/etc/default/grub"
 
 grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAdd
 
-exit
 
 #Set environment variables
 EnvVariables=(
