@@ -35,8 +35,11 @@ DebianVer=${DebianVer%/*}
 echo "$DebianVer"
 
 #Torrent clients
+$RemoveApt transmission-common transmission-qt
+
 $AddRepo ppa:qbittorrent-team/qbittorrent-stable
 $InstallApt qbittorrent
+
 
 exit
 

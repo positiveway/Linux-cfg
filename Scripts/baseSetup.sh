@@ -277,6 +277,8 @@ $AddRepo ppa:cappelikan/ppa
 $InstallApt mainline
 
 #Torrent clients
+$RemoveApt transmission-common transmission-qt
+
 $AddRepo ppa:qbittorrent-team/qbittorrent-stable
 $InstallApt qbittorrent
 
