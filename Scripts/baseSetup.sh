@@ -121,6 +121,15 @@ FileToAdd="$HOME/.profile"
 
 grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAdd
 
+#Set scaling
+StrContent='export GDK_DPI_SCALE=1
+export GDK_SCALE=2
+export QT_SCALE_FACTOR=2
+export XCURSOR_SIZE=64'
+FileToAdd="$HOME/.profile"
+
+grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAdd
+
 #controller
 $InstallApt clang libsdl2-dev libdrm-dev libhidapi-dev libusb-1.0-0 libusb-1.0-0-dev libudev-dev libevdev-dev
 sudo usermod -a -G input user
@@ -133,7 +142,7 @@ $RemoveApt xserver-xorg-input-synaptics
 $InstallApt xserver-xorg-input-libinput
 
 #Samsung sound
-#Set right speaker +45% louder than left.
+#Set right speaker +40% louder than left.
 $InstallApt alsa-tools firmware-sof-signed
 
 #Copy scripts to startup

@@ -20,7 +20,15 @@ echo "Ubuntu Codename: $UbuntuCodename"
 
 IsUbuntuJammy=false && [[ "$UbuntuCodename" == jammy ]] && IsUbuntuJammy=true
 echo "IsUbuntuJammy: $IsUbuntuJammy"
-exit
+
+#Set scaling
+StrContent='export GDK_DPI_SCALE=1
+export GDK_SCALE=2
+export QT_SCALE_FACTOR=2
+export XCURSOR_SIZE=64'
+FileToAdd="$HOME/.profile"
+
+grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAdd
 
 StrContent='export LANGUAGE=en_US.UTF-8
 export LANG=en_US.UTF-8
@@ -28,6 +36,8 @@ export LC_ALL=en_US.UTF-8'
 FileToAdd="$HOME/.profile"
 
 grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAdd
+
+exit
 
 StrContent="MOZ_USE_XINPUT2 DEFAULT=1"
 FileToAdd="/etc/security/pam_env.conf"
