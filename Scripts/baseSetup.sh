@@ -7,12 +7,13 @@ DownloadStdOut="wget -O -"
 AddRepo="sudo add-apt-repository -y"
 FullUpgrade="sudo apt full-upgrade -y"
 RemoveFiles="sudo rm -rf"
-CopyFiles="sudo cp"
+CopyFiles="sudo cp -r"
 SysCtlUser="systemctl --user"
 SysCtl="sudo systemctl"
 Flatpak="flatpak install -y --noninteractive"
 DocsDir="$HOME/Documents"
 ScriptsDir="$DocsDir/Scripts"
+ResourcesDir="$DocsDir/Resources"
 LoginStartupDir="/etc/profile.d"
 
 IsFirstRun=true
@@ -24,12 +25,12 @@ IsFirstRun=true
 # Fonts DPI: 192
 
 # Config 1:
-#     Use antialised fonts: Unhecked
-#     Subpixel antialising: RGB
+#     Use antialised fonts: Unchecked
+#     Subpixel antialising: VRGB
 #     Font hinting: Checked
 #     Hinting style: Full
 
-# LXQt Theme: Kvantum. GTK Theme: Arc-Darcker
+# LXQt Theme: Lubuntu Arc. Icons: Papirus Dark. Pallete: silver-dark. GTK Theme: Arc-Darcker. Cursor: Breeze
 # Power Management: Disable Idleness watcher. Lid behaviour: Suspend
 
 # Open LXQt Configuration Center -> Session Settings or run lxqt-config-session
@@ -41,7 +42,10 @@ IsFirstRun=true
 # Add XCURSOR_SIZE with value 64
 # Set GDK_SCALE to 2
 
+# Shortcut keys: Remove Ctrl+Alt+ shortcuts
+
 # Openbox:
+# Theme: Lubuntu Breeze
 # Change fonts to JB Mono NL Regular 16pt.
 # Mouse: Check "Focus Windows". Check both "Move focus"
 
@@ -49,11 +53,9 @@ IsFirstRun=true
 # Updates check every 2 weeks. Only notify.
 # Locale switch: Right Alt only
 
-# qt5ct:
-#
-
 # Firefox:
-# JB Mono NL fonts 16pt for everything. Min size: 16pt. Scale text only 150%. Don't allow pages to choose fonts.
+# JB Mono NL fonts 16pt for everything. Min size: 16pt. Scaling: 133%. Zoom text only: Unchecked. Allow pages to choose fonts: Unchecked.
+# Website appearance: Dark
 
 # layers.acceleration.force-enabled to true in about:config
 
@@ -77,9 +79,20 @@ set -e
 THIS_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 echo "Script directory: $THIS_SCRIPT_DIR"
 
-#Make folders
-mkdir -p $ScriptsDir
+RESOURCES_DIR="$THIS_SCRIPT_DIR/../Resources"
+echo "Resources directory: $RESOURCES_DIR"
 
+#Make folders
+DirsToMake=(
+    "$ScriptsDir"
+    "$HOME/Downloads/Dev"
+    "$ResourcesDir"
+)
+for DirToMake in "${DirsToMake[@]}"; do
+    mkdir -p $DirToMake
+done
+
+#Version and DE
 UbuntuCodename=$(lsb_release -cs)
 echo "Ubuntu Codename: $UbuntuCodename"
 
@@ -126,6 +139,9 @@ $InstallApt libfuse2
 git config --global user.email "PositiveWay05@gmail.com"
 git config --global user.name "Andrew"
 
+#Run python configuration script
+
+
 #Set environment variables
 EnvVariables=(
     '#Fix locale
@@ -160,6 +176,8 @@ done
 $InstallApt clang libsdl2-dev libdrm-dev libhidapi-dev libusb-1.0-0 libusb-1.0-0-dev libudev-dev libevdev-dev
 sudo usermod -a -G input user
 
+#Copy Resources
+
 #Dim screen
 $InstallApt x11-xserver-utils brightnessctl
 
@@ -180,10 +198,10 @@ sudo chmod +x $ScriptDestPath
 done
 
 #Copy to Documents/Scripts
-for ScriptName in "necessary-verbs.sh" "steam.sh"
+for ScriptName in "necessary-verbs.sh" "run_steam.sh"
 do
 ScriptDestPath="$ScriptsDir/$ScriptName"
-$CopyFiles $THIS_SCRIPT_DIR/$ScriptName $ScriptDestPath
+$CopyFiles $RESOURCES_DIR/$ScriptName $ScriptDestPath
 sudo chmod +x $ScriptDestPath
 done
 
@@ -215,9 +233,6 @@ inxi -G
 
 #Apps
 $InstallApt gparted kate htop
-
-# QT Themes:
-# $InstallApt qt5ct qt5-style-plugins
 
 #Cpupower
 $InstallApt linux-tools-common linux-tools-`uname -r`
@@ -282,6 +297,8 @@ $RemoveApt transmission-common transmission-qt
 $AddRepo ppa:qbittorrent-team/qbittorrent-stable
 $InstallApt qbittorrent
 
+$CopyFiles $RESOURCES_DIR/qBittorrentDarktheme-Rev12 $ResourcesDir/
+
 #Telegram
 if [  ! -d "$DocsDir/Telegram" ]; then
 echo "Telegram is not installed. Installing..."
@@ -295,15 +312,6 @@ fi
 if $IsFirstRun
 then
 echo "First run:"
-
-#Grub
-StrContent='GRUB_DEFAULT=saved
-GRUB_SAVEDEFAULT=true
-GRUB_TIMEOUT_STYLE=menu
-GRUB_TIMEOUT=20'
-FileToAdd="/etc/default/grub"
-
-grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAdd
 
 #Fonts
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)"
@@ -352,6 +360,15 @@ wget -O $Filepath https://gist.githubusercontent.com/AshishKapoor/6f054e43578659
 chmod +x $Filepath
 # $Filepath
 fi
+
+#qt5ct:
+# Style: Breeze. Theme: Darker. Icon Theme: Papirus dark
+
+# Set in Lubuntu Session variables:
+# QT_PLATFORM_PLUGIN to qt5ct
+# QT_QPA_PLATFORMTHEME to qt5ct
+
+# $InstallApt qt5ct qt5-style-plugins
 
 if $IsKDE
 then
@@ -433,38 +450,8 @@ exit
 curl -f https://downloads.surfshark.com/linux/debian-install.sh --output surfshark-install.sh #gets the installation script
 sh surfshark-install.sh #installs surfshark
 
-#Enable 32bit architecture for Wine & Steam
-sudo dpkg --add-architecture i386
-$UpdateApt
-
-#Install wine
-sudo mkdir -pm755 /etc/apt/keyrings
-sudo wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
-
-sudo wget -NP /etc/apt/sources.list.d/ "https://dl.winehq.org/wine-builds/ubuntu/dists/$UbuntuCodename/winehq-$UbuntuCodename.sources"
-$UpdateApt
-sudo apt install --install-recommends winehq-stable
-
-#winetricks
-$InstallApt cabextract p7zip unrar unzip wget zenity
-Filepath="$ScriptsDir/winetricks"
-$RemoveFiles $Filepath
-
-wget -O $Filepath https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
-chmod +x $Filepath
-sh $Filepath corefonts vcrun6
-
-#Steam
-$InstallApt steam
-
-#Playonlinux
-$InstallApt playonlinux
-
 ExtDriveDir="$( echo $THIS_SCRIPT_DIR | cut -f 1,2,3,4 -d "/" )"
 echo "External drive directory: $ExtDriveDir"
-
-#Copy pass
-cp $ExtDriveDir/Dropbox/Settings/Pass.txt $DocsDir
 
 #Mesa drivers
 $AddRepo ppa:kisak/kisak-mesa
