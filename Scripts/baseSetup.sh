@@ -54,7 +54,7 @@ IsFirstRun=true
 
 # System:
 # Updates check every 2 weeks. Only notify.
-# Locale switch: Right Alt only
+# Locale switch: Right Ctrl only
 
 # Firefox:
 # JB Mono NL fonts 16pt for everything. Min size: 16pt. Scaling: 133%. Zoom text only: Unchecked. Allow pages to choose fonts: Unchecked.
