@@ -7,7 +7,8 @@ DownloadStdOut="wget -O -"
 AddRepo="sudo add-apt-repository -y"
 FullUpgrade="sudo apt full-upgrade -y"
 RemoveFiles="sudo rm -rf"
-CopyFiles="sudo cp -r"
+SimpleCopy="cp -r"
+SudoCopy="sudo $SimpleCopy"
 SysCtlUser="systemctl --user"
 SysCtl="sudo systemctl"
 Flatpak="flatpak install -y --noninteractive"
@@ -166,7 +167,7 @@ $InstallApt alsa-tools firmware-sof-signed
 for ScriptName in "dim_screen.sh" "fix_touchpad.sh" "fix_samsung_audio.sh"
 do
 ScriptDestPath="$LoginStartupDir/$ScriptName"
-$CopyFiles $THIS_SCRIPT_DIR/$ScriptName $ScriptDestPath
+$SudoCopy $THIS_SCRIPT_DIR/$ScriptName $ScriptDestPath
 sudo chmod +x $ScriptDestPath
 done
 
@@ -174,7 +175,7 @@ done
 for ScriptName in "necessary-verbs.sh" "run_steam.sh"
 do
 ScriptDestPath="$ScriptsDir/$ScriptName"
-$CopyFiles $RESOURCES_DIR/$ScriptName $ScriptDestPath
+$SimpleCopy $RESOURCES_DIR/$ScriptName $ScriptDestPath
 sudo chmod +x $ScriptDestPath
 done
 
@@ -267,7 +268,7 @@ $RemoveApt transmission-common transmission-qt
 $AddRepo ppa:qbittorrent-team/qbittorrent-stable
 $InstallApt qbittorrent
 
-$CopyFiles $RESOURCES_DIR/qBittorrentDarktheme-Rev12 $ResourcesDir/
+$SimpleCopy $RESOURCES_DIR/qBittorrentDarktheme-Rev12 $ResourcesDir/
 
 #Telegram
 if [  ! -d "$DocsDir/Telegram" ]; then
