@@ -25,6 +25,9 @@ IsFirstRun=true
 # Fonts DPI: 192
 
 # Config 1:
+#     Don't touch defaults
+
+# Config 2:
 #     Use antialised fonts: Unchecked
 #     Subpixel antialising: VRGB
 #     Font hinting: Checked
@@ -140,37 +143,7 @@ git config --global user.email "PositiveWay05@gmail.com"
 git config --global user.name "Andrew"
 
 #Run python configuration script
-
-
-#Set environment variables
-EnvVariables=(
-    '#Fix locale
-export LANGUAGE=en_US.UTF-8
-export LANG=en_US.UTF-8
-export LC_ALL=en_US.UTF-8'
-
-    '#Set formats
-export LC_COLLATE=en_DE.UTF-8
-export LC_MEASUREMENT=en_DE.UTF-8
-export LC_MONETARY=en_DE.UTF-8
-export LC_NUMERIC=en_DE.UTF-8
-export LC_TIME=en_DE.UTF-8'
-
-    '#Set scaling
-export GDK_DPI_SCALE=1
-export GDK_SCALE=2
-export QT_SCALE_FACTOR=2
-export XCURSOR_SIZE=64'
-
-    '#Configure GTK
-export GTK_CSD=0'
-)
-
-FileToAdd="$HOME/.profile"
-
-for StrContent in "${EnvVariables[@]}"; do
-    grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAdd
-done
+sudo python3 baseSetup.py
 
 #controller
 $InstallApt clang libsdl2-dev libdrm-dev libhidapi-dev libusb-1.0-0 libusb-1.0-0-dev libudev-dev libevdev-dev
@@ -233,9 +206,6 @@ inxi -G
 
 #Apps
 $InstallApt gparted kate htop
-
-#Cpupower
-$InstallApt linux-tools-common linux-tools-`uname -r`
 
 #Cpupower-gui
 $InstallApt libicu-dev libxcb-cursor-dev cpupower-gui
@@ -438,7 +408,13 @@ sudo update-grub
 
 #show current boot parameters
 cat /proc/cmdline
+
+#Cpupower: show current CPU parameters
+$InstallApt linux-tools-common
+set +e
+$InstallApt linux-tools-`uname -r`
 cpupower frequency-info
+set -e
 
 #Disconnect Warp
 # warp-cli disconnect

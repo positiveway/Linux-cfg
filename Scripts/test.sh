@@ -15,6 +15,8 @@ LoginStartupDir="/etc/profile.d"
 
 set -e
 
+sudo python3 baseSetup.py
+
 UbuntuCodename=$(lsb_release -cs)
 echo "Ubuntu Codename: $UbuntuCodename"
 
@@ -34,6 +36,9 @@ DebianVer=$(cat /etc/debian_version)
 DebianVer=${DebianVer%/*}
 echo "$DebianVer"
 
+exit
+
+
 #Torrent clients
 $RemoveApt transmission-common transmission-qt
 
@@ -41,7 +46,6 @@ $AddRepo ppa:qbittorrent-team/qbittorrent-stable
 $InstallApt qbittorrent
 
 
-exit
 
 #Grub
 StrContent='GRUB_DEFAULT=saved
