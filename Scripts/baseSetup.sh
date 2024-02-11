@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 InstallApt="sudo apt install -y"
 RemoveApt="sudo apt remove -y"
 AutoRemoveApt="sudo apt autoremove -y"
@@ -179,6 +181,26 @@ $SimpleCopy $RESOURCES_DIR/$ScriptName $ScriptDestPath
 sudo chmod +x $ScriptDestPath
 done
 
+#Android
+$InstallApt android-tools-adb
+
+#scrcpy
+$InstallApt ffmpeg libsdl2-2.0-0 adb wget \
+                 gcc git pkg-config meson ninja-build libsdl2-dev \
+                 libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev \
+                 libswresample-dev libusb-1.0-0 libusb-1.0-0-dev
+
+Repo="scrcpy"
+Filepath="$DocsDir/$Repo"
+if [  ! -d "$Filepath" ]; then
+echo "Installing $Repo"
+git clone https://github.com/Genymobile/$Repo.git $Filepath
+fi
+cd $Filepath
+git pull
+./install_release.sh
+scrcpy -d
+
 #Intel GPU
 $RemoveApt xserver-xorg-video-intel
 $RemoveFiles /etc/X11/xorg.conf.d/20-intel.conf
@@ -316,10 +338,10 @@ sudo -v && wget --no-check-certificate -nv -O- https://download.calibre-ebook.co
 # $InstallApt linux-image-liquorix-amd64 linux-headers-liquorix-amd64
 
 #bdprochot
-prochotRepo="turnoff-BD-PROCHOT"
-Filepath="$ScriptsDir/$prochotRepo"
+Repo="turnoff-BD-PROCHOT"
+Filepath="$ScriptsDir/$Repo"
 $RemoveFiles $Filepath
-git clone https://github.com/yyearth/$prochotRepo.git $Filepath
+git clone https://github.com/yyearth/$Repo.git $Filepath
 
 #mouse
 Filepath="$ScriptsDir/mousewheel.sh"
@@ -397,8 +419,18 @@ fi
 $InstallApt flatpak plasma-discover-backend-flatpak
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
+#Games
 #ProtopUpQt
 $Flatpak flathub net.davidotek.pupgui2
+
+#Lutris
+echo "deb [signed-by=/etc/apt/keyrings/lutris.gpg] https://download.opensuse.org/repositories/home:/strycore/Debian_12/ ./" | sudo tee /etc/apt/sources.list.d/lutris.list > /dev/null
+wget -q -O- https://download.opensuse.org/repositories/home:/strycore/Debian_12/Release.key | gpg --dearmor | sudo tee /etc/apt/keyrings/lutris.gpg > /dev/null
+$UpdateApt
+$InstallApt lutris
+
+#Heroic Games Launcher
+# https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/
 
 #grub
 sudo update-grub
@@ -426,6 +458,8 @@ exit
 #Surfshark
 curl -f https://downloads.surfshark.com/linux/debian-install.sh --output surfshark-install.sh #gets the installation script
 sh surfshark-install.sh #installs surfshark
+# sudo apt-get remove -y surfshark surfshark-release
+
 
 ExtDriveDir="$( echo $THIS_SCRIPT_DIR | cut -f 1,2,3,4 -d "/" )"
 echo "External drive directory: $ExtDriveDir"
@@ -435,7 +469,7 @@ $AddRepo ppa:kisak/kisak-mesa
 sudo apt upgrade
 
 #go
-goVersion="19.4"
+goVersion="21.5"
 
 goPackage="go1.$goVersion.linux-amd64.tar.gz"
 wget https://go.dev/dl/$goPackage

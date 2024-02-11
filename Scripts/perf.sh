@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 sudo cpupower frequency-set --governor performance
 sudo cpupower set -b 0
 cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor

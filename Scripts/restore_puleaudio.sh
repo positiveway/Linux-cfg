@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 set -e
 #sudo ppa-purge ppa:pipewire-debian/pipewire-upstream
 sudo apt remove pipewire-audio-client-libraries libspa-0.2-bluetooth libspa-0.2-jack

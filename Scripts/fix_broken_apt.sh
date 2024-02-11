@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 sudo apt-get update --fix-missing
 sudo apt-get install -f
 sudo apt-get update

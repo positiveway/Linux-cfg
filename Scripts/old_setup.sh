@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 InstallApt="sudo apt install -y"
 RemoveApt="sudo apt remove -y"
 AutoRemoveApt="sudo apt autoremove -y"

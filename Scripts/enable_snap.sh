@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 SysCtl="sudo systemctl"
 $SysCtl unmask snapd.service
 $SysCtl enable snapd.seeded.service

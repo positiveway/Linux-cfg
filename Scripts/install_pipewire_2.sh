@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 sudo apt install pipewire-media-session- wireplumber
 systemctl --user --now enable wireplumber.service
 sudo apt install pipewire-audio-client-libraries

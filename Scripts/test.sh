@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 InstallApt="sudo apt install -y"
 RemoveApt="sudo apt remove -y"
 AutoRemoveApt="sudo apt autoremove -y"
@@ -5,17 +7,19 @@ InstallPkg="sudo dpkg -i"
 UpdateApt="sudo apt update"
 DownloadStdOut="wget -O -"
 AddRepo="sudo add-apt-repository -y"
+FullUpgrade="sudo apt full-upgrade -y"
 RemoveFiles="sudo rm -rf"
-CopyFiles="sudo cp"
+SimpleCopy="cp -r"
+SudoCopy="sudo $SimpleCopy"
 SysCtlUser="systemctl --user"
 SysCtl="sudo systemctl"
 Flatpak="flatpak install -y --noninteractive"
 DocsDir="$HOME/Documents"
+ScriptsDir="$DocsDir/Scripts"
+ResourcesDir="$DocsDir/Resources"
 LoginStartupDir="/etc/profile.d"
 
 set -e
-
-sudo python3 baseSetup.py
 
 UbuntuCodename=$(lsb_release -cs)
 echo "Ubuntu Codename: $UbuntuCodename"
@@ -36,7 +40,37 @@ DebianVer=$(cat /etc/debian_version)
 DebianVer=${DebianVer%/*}
 echo "$DebianVer"
 
+echo "deb [signed-by=/etc/apt/keyrings/lutris.gpg] https://download.opensuse.org/repositories/home:/strycore/Debian_12/ ./" | sudo tee /etc/apt/sources.list.d/lutris.list > /dev/null
+wget -q -O- https://download.opensuse.org/repositories/home:/strycore/Debian_12/Release.key | gpg --dearmor | sudo tee /etc/apt/keyrings/lutris.gpg > /dev/null
+sudo apt update
+sudo apt install lutris
+
 exit
+
+#scrcpy
+sudo apt install ffmpeg libsdl2-2.0-0 adb wget \
+                 gcc git pkg-config meson ninja-build libsdl2-dev \
+                 libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev \
+                 libswresample-dev libusb-1.0-0 libusb-1.0-0-dev
+
+Repo="scrcpy"
+Filepath="$DocsDir/$Repo"
+if [  ! -d "$Filepath" ]; then
+echo "Installing $Repo"
+git clone https://github.com/Genymobile/$Repo.git $Filepath
+fi
+cd $Filepath
+git pull
+./install_release.sh
+scrcpy -d
+
+
+goVersion="21.5"
+
+goPackage="go1.$goVersion.linux-amd64.tar.gz"
+wget https://go.dev/dl/$goPackage
+$RemoveFiles /usr/local/go && sudo tar -C /usr/local -xzf $goPackage
+$RemoveFiles ./$goPackage
 
 
 #Torrent clients

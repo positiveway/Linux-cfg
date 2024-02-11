@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 sudo apt-get remove timidity
 sudo apt-get remove --purge pulseaudio
 sudo apt-get install pulseaudio
