@@ -2,6 +2,8 @@
 
 #xmodmap -e "pointer = 1 1 3 5 4 7 6 8 9 10 11 12"
 
+# xinput set-prop "IMG4100:00 4D49:4150 Touchpad" "libinput Disable While Typing Enabled" 0
+
 xinput list
 DeviceName="IMG4100:00 4D49:4150 Touchpad"
 
@@ -18,5 +20,3 @@ xinput set-prop "$DeviceName" "libinput Click Method Enabled" 0, 1
 # xinput set-prop "$DeviceName" "libinput Accel Profile Enabled" 1, 0
 
 xinput list-props "$DeviceName"
-
-# xinput set-prop "IMG4100:00 4D49:4150 Touchpad" "libinput Disable While Typing Enabled" 0
