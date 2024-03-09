@@ -54,6 +54,9 @@ sh $Filepath corefonts vcrun6
 #Playonlinux
 $InstallApt playonlinux
 
+#PortProton
+$InstallApt curl file libc6 libnss3 policykit-1 xz-utils bubblewrap curl icoutils tar libvulkan1 libvulkan1:i386  zstd cabextract xdg-utils openssl libgl libgl1:i386
+
 #Steam
 $InstallApt steam
 steam

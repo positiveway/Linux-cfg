@@ -40,12 +40,44 @@ DebianVer=$(cat /etc/debian_version)
 DebianVer=${DebianVer%/*}
 echo "$DebianVer"
 
+# appimaged
+# Remove pre-existing similar tools
+systemctl --user stop appimaged.service || true
+sudo apt-get -y remove appimagelauncher || true
+
+# Clear cache
+rm "$HOME"/.local/share/applications/appimage*
+[ -f ~/.config/systemd/user/default.target.wants/appimagelauncherd.service ] && rm ~/.config/systemd/user/default.target.wants/appimagelauncherd.service
+
+# Optionally, install Firejail (if you want sandboxing functionality)
+
+# Download
+mkdir -p ~/Applications
+wget -c https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "appimaged-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2) -P ~/Applications/
+chmod +x ~/Applications/appimaged-*.AppImage
+
+# Launch
+~/Applications/appimaged-*.AppImage
+
+exit
+
+
+# Fan control
+sudo apt-get install ca-certificates git build-essential cmake gcc g++ libkf5config-dev libkf5auth-dev libkf5package-dev libkf5declarative-dev libkf5coreaddons-dev libkf5dbusaddons-dev libkf5kcmutils-dev libkf5i18n-dev libkf5plasma-dev libqt5core5a libqt5widgets5 libqt5gui5 libqt5qml5 extra-cmake-modules qtbase5-dev libkf5notifications-dev qml-module-org-kde-kirigami2 qml-module-qtquick-dialogs qml-module-qtquick-controls2 qml-module-qtquick-layouts qml-module-qt-labs-settings qml-module-qt-labs-folderlistmodel gettext
+git clone https://github.com/Maldela/fancontrol-gui.git
+cd fancontrol-gui
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_KCM=on -DBUILD_PLASMOID=on
+make -j
+sudo make install
+
+
+
 echo "deb [signed-by=/etc/apt/keyrings/lutris.gpg] https://download.opensuse.org/repositories/home:/strycore/Debian_12/ ./" | sudo tee /etc/apt/sources.list.d/lutris.list > /dev/null
 wget -q -O- https://download.opensuse.org/repositories/home:/strycore/Debian_12/Release.key | gpg --dearmor | sudo tee /etc/apt/keyrings/lutris.gpg > /dev/null
 sudo apt update
 sudo apt install lutris
-
-exit
 
 #scrcpy
 sudo apt install ffmpeg libsdl2-2.0-0 adb wget \

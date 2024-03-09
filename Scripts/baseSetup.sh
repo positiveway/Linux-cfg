@@ -133,7 +133,7 @@ $InstallApt libncurses-dev gawk flex bison openssl libssl-dev dkms libelf-dev li
 $InstallApt ubuntu-restricted-extras
 
 #base
-$InstallApt ppa-purge
+$InstallApt ppa-purge apt-show-versions
 
 #Restore NTFS mounting
 $InstallApt fuse3 ntfs-3g
@@ -151,8 +151,6 @@ sudo python3 baseSetup.py
 #controller
 $InstallApt clang libsdl2-dev libdrm-dev libhidapi-dev libusb-1.0-0 libusb-1.0-0-dev libudev-dev libevdev-dev
 sudo usermod -a -G input user
-
-#Copy Resources
 
 #Dim screen
 $InstallApt x11-xserver-utils brightnessctl
@@ -181,27 +179,9 @@ $SimpleCopy $RESOURCES_DIR/$ScriptName $ScriptDestPath
 sudo chmod +x $ScriptDestPath
 done
 
-#Android
-$InstallApt android-tools-adb
-
-#scrcpy
-$InstallApt ffmpeg libsdl2-2.0-0 adb wget \
-                 gcc git pkg-config meson ninja-build libsdl2-dev \
-                 libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev \
-                 libswresample-dev libusb-1.0-0 libusb-1.0-0-dev
-
-Repo="scrcpy"
-Filepath="$DocsDir/$Repo"
-if [  ! -d "$Filepath" ]; then
-echo "Installing $Repo"
-git clone https://github.com/Genymobile/$Repo.git $Filepath
-fi
-cd $Filepath
-git pull
-./install_release.sh
-scrcpy -d
-
 #Intel GPU
+$InstallApt intel-gpu-tools
+
 $RemoveApt xserver-xorg-video-intel
 $RemoveFiles /etc/X11/xorg.conf.d/20-intel.conf
 
@@ -211,7 +191,10 @@ $RemoveFiles /etc/X11/xorg.conf.d/20-intel.conf
 #   Option "TearFree" "true"
 # EndSection' | sudo tee /etc/X11/xorg.conf.d/20-intel.conf
 
-$InstallApt inxi
+$InstallApt inxi hwinfo vainfo mesa-utils
+hwinfo --display
+glxinfo |grep OpenGL
+vainfo
 inxi -G
 
 # Wifi
@@ -229,9 +212,55 @@ inxi -G
 
 #Apps
 $InstallApt gparted kate htop
+sudo snap install mpv
+
+#Gaming
+$InstallApt mangohud
 
 #Cpupower-gui
 $InstallApt libicu-dev libxcb-cursor-dev cpupower-gui
+
+#Android
+$InstallApt android-tools-adb
+
+# appimaged
+# Remove pre-existing similar tools
+set +e
+systemctl --user stop appimaged.service || true
+sudo apt-get -y remove appimagelauncher || true
+
+# Clear cache
+rm "$HOME"/.local/share/applications/appimage*
+[ -f ~/.config/systemd/user/default.target.wants/appimagelauncherd.service ] && rm ~/.config/systemd/user/default.target.wants/appimagelauncherd.service
+
+# Optionally, install Firejail (if you want sandboxing functionality)
+
+# Download
+mkdir -p ~/Applications
+wget -c https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "appimaged-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2) -P ~/Applications/
+chmod +x ~/Applications/appimaged-*.AppImage
+
+# Launch
+~/Applications/appimaged-*.AppImage
+set -e
+
+#scrcpy
+$InstallApt ffmpeg libsdl2-2.0-0 adb wget \
+                 gcc git pkg-config meson ninja-build libsdl2-dev \
+                 libavcodec-dev libavdevice-dev libavformat-dev libavutil-dev \
+                 libswresample-dev libusb-1.0-0 libusb-1.0-0-dev
+
+Repo="scrcpy"
+Filepath="$DocsDir/$Repo"
+if [  ! -d "$Filepath" ]; then
+echo "Installing $Repo"
+git clone https://github.com/Genymobile/$Repo.git $Filepath
+fi
+cd $Filepath
+git pull
+#./install_release.sh
+#scrcpy -d
+
 
 #WITHOUT ACTIVATING WARP ADDING REPO CAN CAUSE CONNECTION TIMEOUT
 #Warp
@@ -283,6 +312,12 @@ grep -qxF "$StrContent" $FileToAdd || echo "$StrContent" | sudo tee -a $FileToAd
 #mainline kernel downloader
 $AddRepo ppa:cappelikan/ppa
 $InstallApt mainline
+
+#MESA drivers
+$AddRepo ppa:oibaf/graphics-drivers
+$UpdateApt
+$FullUpgrade
+$InstallApt mesa-vdpau-drivers
 
 #Torrent clients
 $RemoveApt transmission-common transmission-qt
@@ -432,6 +467,9 @@ $InstallApt lutris
 #Heroic Games Launcher
 # https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/
 
+#mangohud
+$InstallApt mangohud goverlay
+
 #grub
 sudo update-grub
 
@@ -450,23 +488,19 @@ cpupower frequency-info
 set -e
 
 #Disconnect Warp
-# warp-cli disconnect
-
-exit
-exit
+warp-cli disconnect
 
 #Surfshark
 curl -f https://downloads.surfshark.com/linux/debian-install.sh --output surfshark-install.sh #gets the installation script
 sh surfshark-install.sh #installs surfshark
 # sudo apt-get remove -y surfshark surfshark-release
 
+exit
+exit
+
 
 ExtDriveDir="$( echo $THIS_SCRIPT_DIR | cut -f 1,2,3,4 -d "/" )"
 echo "External drive directory: $ExtDriveDir"
-
-#Mesa drivers
-$AddRepo ppa:kisak/kisak-mesa
-sudo apt upgrade
 
 #go
 goVersion="21.5"

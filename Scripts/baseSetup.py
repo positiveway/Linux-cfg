@@ -117,7 +117,7 @@ export GTK_CSD=0''', f"{HOME}/.profile")
     GRUB_SAVEDEFAULT=true
     GRUB_TIMEOUT_STYLE=menu
     GRUB_TIMEOUT=20
-    GRUB_CMDLINE_LINUX_DEFAULT="quiet splash mitigations=off i915.enable_psr=0 nowatchdog nmi_watchdog=0 split_lock_detect=off zswap.enabled=0 systemd.zram=0"''',
+    GRUB_CMDLINE_LINUX_DEFAULT="quiet splash mitigations=off i915.mitigations=off i915.enable_psr=0 nowatchdog nmi_watchdog=0 split_lock_detect=off zswap.enabled=0 systemd.zram=0 isolcpus=8,9,10,11,12,13,14,15"''',
                     '/etc/default/grub')
 
     comment_line('/swapfile', '/etc/fstab')

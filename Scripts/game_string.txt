@@ -1,0 +1,9 @@
+MANGOHUD_CONFIG=height=1200,fps,vram,ram,throttling_status,gpu_temp,gpu_junction_temp,gpu_core_clock,gpu_mem_temp,gpu_mem_clock,gpu_power,cpu_temp,cpu_power,cpu_mhz,io_read,io_write
+
+
+LP_NUM_THREADS=4 mangohud %command%
+SDL_AUDIO_DRIVER=pipewire LP_NUM_THREADS=8 mangohud --dlsym %command%
+
+MESA_NO_ERROR=1 SDL_AUDIO_DRIVER=pipewire LP_NUM_THREADS=8 MANGOHUD_CONFIG= gamemoderun mangohud %command%
+
+#/usr/share/doc/mangohud/MangoHud.conf.example
